@@ -630,7 +630,7 @@ fn fetch_lrclib_lyrics(track_name: String, artist_name: String) -> Result<serde_
         url_encode(&artist_name)
     );
     if let Ok(resp) = ureq::get(&url)
-        .set("User-Agent", "Kala/1.0.2 (+https://github.com/kala-open/kala)")
+        .set("User-Agent", "Kala/1.0.3 (+https://github.com/kala-open/kala)")
         .call()
     {
         if let Ok(json) = resp.into_json::<serde_json::Value>() {
@@ -649,7 +649,7 @@ fn fetch_lrclib_lyrics(track_name: String, artist_name: String) -> Result<serde_
         url_encode(&query)
     );
     let fallback_resp = ureq::get(&fallback_url)
-        .set("User-Agent", "Kala/1.0.2 (+https://github.com/kala-open/kala)")
+        .set("User-Agent", "Kala/1.0.3 (+https://github.com/kala-open/kala)")
         .call()
         .map_err(|e| format!("LRCLIB request failed: {}", e))?;
     fallback_resp.into_json::<serde_json::Value>()
@@ -755,8 +755,7 @@ pub fn get_system_clipboard() -> Option<String> {
     None
 }
 
-#[allow(unused_variables)]
-pub fn set_system_clipboard(text: &str) {
+pub fn set_system_clipboard(_text: &str) {
     #[cfg(target_os = "macos")]
     {
         use std::io::Write;
@@ -765,21 +764,20 @@ pub fn set_system_clipboard(text: &str) {
             .spawn()
         {
             if let Some(mut stdin) = child.stdin.take() {
-                let _ = stdin.write_all(text.as_bytes());
+                let _ = stdin.write_all(_text.as_bytes());
             }
             let _ = child.wait();
         }
     }
 }
 
-#[allow(unused_variables)]
-pub fn trigger_system_notification(title: &str, body: &str) {
+pub fn trigger_system_notification(_title: &str, _body: &str) {
     #[cfg(target_os = "macos")]
     {
         let script = format!(
             r#"display notification "{}" with title "{}" sound name "Glass""#,
-            body.replace('"', "\\\""),
-            title.replace('"', "\\\"")
+            _body.replace('"', "\\\""),
+            _title.replace('"', "\\\"")
         );
         let _ = std::process::Command::new("osascript").arg("-e").arg(script).spawn();
     }
@@ -1072,18 +1070,17 @@ fn copy_to_clipboard(text: String, state: State<'_, AppState>, app: AppHandle) -
 }
 
 #[tauri::command]
-#[allow(unused_variables)]
-fn open_shelf_file(path: String) -> Result<(), String> {
+fn open_shelf_file(_path: String) -> Result<(), String> {
     #[cfg(target_os = "macos")]
     {
-        let expanded = if path.starts_with("~/") {
+        let expanded = if _path.starts_with("~/") {
             if let Ok(home) = std::env::var("HOME") {
-                path.replacen('~', &home, 1)
+                _path.replacen('~', &home, 1)
             } else {
-                path.clone()
+                _path.clone()
             }
         } else {
-            path.clone()
+            _path.clone()
         };
 
         let p = std::path::Path::new(&expanded);
@@ -1105,11 +1102,10 @@ fn get_battery_status() -> serde_json::Value {
 }
 
 #[tauri::command]
-#[allow(unused_variables)]
-fn system_media_control(action: String) -> Result<(), String> {
+fn system_media_control(_action: String) -> Result<(), String> {
     #[cfg(target_os = "macos")]
     {
-        let (cmd_music, cmd_spotify) = match action.as_str() {
+        let (cmd_music, cmd_spotify) = match _action.as_str() {
             "playpause" => ("playpause", "playpause"),
             "next" => ("next track", "next track"),
             "prev" => ("previous track", "previous track"),
