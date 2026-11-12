@@ -1,6 +1,6 @@
 {
   "name": "kala",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Living desktop notch lintas platform (macOS, Linux, Windows) dengan maskot interaktif, Pomodoro, lirik sinkron LRCLIB, kalkulator sholat Kemenag RI 84 kota, dan dasbor pengaturan harian.",
   "license": "MIT",
   "private": false,

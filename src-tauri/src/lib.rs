@@ -630,7 +630,7 @@ fn fetch_lrclib_lyrics(track_name: String, artist_name: String) -> Result<serde_
         url_encode(&artist_name)
     );
     if let Ok(resp) = ureq::get(&url)
-        .set("User-Agent", "Kala/1.0.0 (+https://github.com/kala-open/kala)")
+        .set("User-Agent", "Kala/1.0.1 (+https://github.com/kala-open/kala)")
         .call()
     {
         if let Ok(json) = resp.into_json::<serde_json::Value>() {
@@ -649,7 +649,7 @@ fn fetch_lrclib_lyrics(track_name: String, artist_name: String) -> Result<serde_
         url_encode(&query)
     );
     let fallback_resp = ureq::get(&fallback_url)
-        .set("User-Agent", "Kala/1.0.0 (+https://github.com/kala-open/kala)")
+        .set("User-Agent", "Kala/1.0.1 (+https://github.com/kala-open/kala)")
         .call()
         .map_err(|e| format!("LRCLIB request failed: {}", e))?;
     fallback_resp.into_json::<serde_json::Value>()
