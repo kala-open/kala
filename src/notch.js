@@ -138,6 +138,24 @@ export function setMode(next) {
     }
   }
 
+  // Refresh active panel data
+  if (next === 'music') {
+    renderMusic();
+    renderLyrics();
+  } else if (next === 'pomo') {
+    renderPomo();
+  } else if (next === 'water') {
+    renderWater();
+  } else if (next === 'shelf') {
+    renderShelf();
+  } else if (next === 'clip') {
+    renderClip();
+  } else if (next === 'todo') {
+    renderNotchTodos();
+  } else if (next === 'prayer') {
+    renderPrayer();
+  }
+
   // Adjust native Tauri window geometry
   const sizes = {
     pet: { w: 440, h: 48 },
@@ -286,10 +304,10 @@ function renderMusic() {
   [muArt, lyrArt].forEach(el => {
     if (!el) return;
     if (artUrl) {
-      el.style.backgroundImage = `url("${artUrl}")`;
+      el.style.background = `url("${artUrl}") center center / cover no-repeat`;
       el.classList.add('has-cover');
     } else {
-      el.style.backgroundImage = '';
+      el.style.background = '';
       el.classList.remove('has-cover');
     }
   });
@@ -1366,8 +1384,17 @@ async function initHardwareNotch() {
 }
 
 async function init() {
-  await initHardwareNotch();
-  await loadSettings();
+  try {
+    await initHardwareNotch();
+  } catch (e) {
+    console.warn('[INIT] Hardware notch check fallback:', e);
+  }
+
+  try {
+    await loadSettings();
+  } catch (e) {
+    console.warn('[INIT] Load settings fallback:', e);
+  }
 
   // Load initial demo track
   if (DEMO_TRACKS?.length > 0) {
@@ -1414,49 +1441,65 @@ async function init() {
   }
 
   // Mount living mascot
-  const mountEl = document.getElementById('kala-mascot-mount');
-  if (mountEl) {
-    mascot = mountMascot(mountEl, {
-      size: 40,
-      mood: 'idle',
-      interactive: true,
-    });
+  try {
+    const mountEl = document.getElementById('kala-mascot-mount');
+    if (mountEl) {
+      mascot = mountMascot(mountEl, {
+        size: 40,
+        mood: 'idle',
+        interactive: true,
+      });
+    }
+  } catch (e) {
+    console.error('[INIT] Mount mascot error:', e);
   }
 
-  renderMusic();
-  renderLyrics();
-  renderPomo();
-  renderWater();
-  renderPrayer();
-  shelfItems = loadNotchShelf();
-  if (!shelfItems || shelfItems.length === 0) {
-    shelfItems = [
-      { name: 'laporan-keuangan.pdf', size: '2.4 MB', path: '~/Documents/laporan-keuangan.pdf' },
-      { name: 'screenshot-desain.png', size: '840 KB', path: '~/Desktop/screenshot-desain.png' },
-      { name: 'source-code.rs', size: '48 KB', path: '~/src/lib.rs' },
-    ];
+  try {
+    renderMusic();
+    renderLyrics();
+    renderPomo();
+    renderWater();
+    renderPrayer();
+    shelfItems = loadNotchShelf();
+    if (!shelfItems || shelfItems.length === 0) {
+      shelfItems = [
+        { name: 'laporan-keuangan.pdf', size: '2.4 MB', path: '~/Documents/laporan-keuangan.pdf' },
+        { name: 'screenshot-desain.png', size: '840 KB', path: '~/Desktop/screenshot-desain.png' },
+        { name: 'source-code.rs', size: '48 KB', path: '~/src/lib.rs' },
+      ];
+    }
+    renderShelf();
+    renderClip();
+    renderNotchTodos();
+    syncWaves();
+  } catch (e) {
+    console.error('[INIT] Render panels error:', e);
   }
-  renderShelf();
-  renderClip();
-  renderNotchTodos();
-  syncWaves();
 
   // Format initial date and clock
-  const now = new Date();
-  const days = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-  const dateStr = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]}`;
-  const hh = String(now.getHours()).padStart(2, '0');
-  const mm = String(now.getMinutes()).padStart(2, '0');
-  updateClockText(`${hh}:${mm}`, dateStr);
+  try {
+    const now = new Date();
+    const days = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+    const dateStr = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]}`;
+    const hh = String(now.getHours()).padStart(2, '0');
+    const mm = String(now.getMinutes()).padStart(2, '0');
+    updateClockText(`${hh}:${mm}`, dateStr);
+  } catch (e) {
+    console.error('[INIT] Clock update error:', e);
+  }
 
   setInterval(tickTrack, 1000);
 
-  setupEvents();
-  listenTauri();
+  try {
+    setupEvents();
+    listenTauri();
+  } catch (e) {
+    console.error('[INIT] Event setup error:', e);
+  }
 
   // Start in resting pet mode
   setMode('pet');
 }
 
-await init();
+init().catch(err => console.error('[INIT_FAILED]', err));

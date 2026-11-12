@@ -450,7 +450,7 @@ formLrclibSearch?.addEventListener("submit", async (e) => {
   try {
     const resp = await fetch(`https://lrclib.net/api/search?q=${encodeURIComponent(query)}`, {
       headers: {
-        "Lrclib-Client": "Kala/1.0.3 (https://github.com/kala-open/kala)",
+        "Lrclib-Client": "Kala/1.0.4 (https://github.com/kala-open/kala)",
       },
     });
     if (!resp.ok) throw new Error(`HTTP status: ${resp.status}`);
