@@ -8,6 +8,17 @@
  * prayer times, and window geometry.
  */
 
+window.addEventListener('error', e => {
+  console.error('[NOTCH_ERROR]', e.message, e.filename, e.lineno, e.colno, e.error);
+  try {
+    const el = document.getElementById('notif-body');
+    if (el) el.textContent = `JS: ${e.message} (${e.lineno})`;
+  } catch (_) {}
+});
+window.addEventListener('unhandledrejection', e => {
+  console.error('[NOTCH_REJECTION]', e.reason);
+});
+
 import {
   DEFAULT_SETTINGS,
   DEMO_TRACKS,
