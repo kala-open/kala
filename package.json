@@ -1,0 +1,21 @@
+{
+  "name": "kala",
+  "version": "1.0.0",
+  "description": "Living desktop notch lintas platform (macOS, Linux, Windows) dengan maskot interaktif, Pomodoro, lirik sinkron LRCLIB, kalkulator sholat Kemenag RI 84 kota, dan dasbor pengaturan harian.",
+  "license": "MIT",
+  "private": false,
+  "type": "module",
+  "scripts": {
+    "tauri": "tauri",
+    "build": "node scripts/build.js",
+    "dev": "python3 -m http.server 4173",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build",
+    "build:rust": "cd src-tauri && cargo build",
+    "check": "cd src-tauri && cargo check"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.2.0"
+  }
+}
+

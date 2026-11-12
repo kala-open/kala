@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kala Notch</title>
+  <style>
+    :root {
+      --void: #03040a;
+      --panel: #0a0d18;
+      --ink: #eceff7;
+      --mist: #8c94a8;
+      --line: rgba(236, 239, 247, 0.10);
+      --cyan: #19b8ff;
+      --indigo: #2d5bff;
+      --violet: #7b4bff;
+      --glow: linear-gradient(90deg, var(--cyan), var(--indigo) 55%, var(--violet));
+      --ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+      --spring: cubic-bezier(0.34, 1.32, 0.5, 1);
+      --ease: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: transparent;
+      font-family: var(--ui);
+      color: #fff;
+      user-select: none;
+      -webkit-user-select: none;
+      pointer-events: none;
+    }
+
+    #root {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: transparent;
+      pointer-events: none;
+    }
+
+    /* ── Notch container ── */
+    .mn {
+      pointer-events: auto;
+      --w: 160px;
+      --h: 32px;
+      --r: 16px;
+      --e: 12px;
+      position: relative;
+      width: var(--w);
+      height: var(--h);
+      transform-origin: 50% 0;
+      background: #000000;
+      border-radius: 0 0 var(--r) var(--r);
+      transition: width 0.48s var(--spring), height 0.48s var(--spring), border-radius 0.38s ease;
+      font-family: var(--ui);
+      color: #fff;
+      font-size: 13px;
+      line-height: 1;
+      box-shadow: none;
+      cursor: pointer;
+    }
+
+    /* Natural vector squircle corner ears */
+    .mn-ear {
+      position: absolute;
+      top: 0;
+      width: 32px;
+      height: 26px;
+      pointer-events: none;
+      z-index: 1;
+      transition: width 0.38s ease, height 0.38s ease, opacity 0.28s ease;
+    }
+    .mn-ear-l {
+      right: 100%;
+      margin-right: -0.2px;
+    }
+    .mn-ear-r {
+      left: 100%;
+      margin-left: -0.2px;
+    }
+
+    /* Dimensions per mode */
+    .mn[data-s="pet"], .mn[data-s="idle"] {
+      --w: 160px;
+      --h: 32px;
+      --r: 16px;
+      cursor: pointer;
+    }
+    .mn[data-s="pet"] .mn-ear,
+    .mn[data-s="idle"] .mn-ear {
+      width: 16px;
+      height: 14px;
+    }
+    .mn[data-s="music"],
+    .mn[data-s="pomo"],
+    .mn[data-s="water"],
+    .mn[data-s="shelf"],
+    .mn[data-s="todo"],
+    .mn[data-s="prayer"],
+    .mn[data-s="clip"] {
+      --w: 420px;
+      --h: 140px;
+      --r: 32px;
+      cursor: default;
+    }
+    .mn[data-s="lyrics"] {
+      --w: 600px;
+      --h: 140px;
+      --r: 32px;
+      cursor: default;
+    }
+    .mn[data-s="charge"],
+    .mn[data-s="notif"],
+    .mn[data-s="remind"] {
+      --w: 310px;
+      --h: 56px;
+      --r: 19px;
+    }
+    .mn:is([data-s="charge"], [data-s="notif"], [data-s="remind"]) .mn-ear {
+      width: 20px;
+      height: 16px;
+    }
+
+    /* Hardware camera notch screen adaptation */
+    body.has-hw-notch .mn[data-s="pet"],
+    body.has-hw-notch .mn[data-s="idle"] {
+      --w: var(--hw-w, 204px);
+      --h: var(--hw-h, 34px);
+      --r: 10px;
+    }
+    body.has-hw-notch .mn[data-s="pet"] .mn-ear,
+    body.has-hw-notch .mn[data-s="idle"] .mn-ear {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* ── Layers inside Notch ── */
+    .ly {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      border-radius: inherit;
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(0.88, 0.92);
+      transform-origin: 50% 0;
+      transition: opacity 0.16s ease, transform 0.22s ease;
+    }
+
+    .mn[data-s="pet"] .l-pet,
+    .mn[data-s="idle"] .l-idle,
+    .mn[data-s="music"] .l-music,
+    .mn[data-s="lyrics"] .l-lyrics,
+    .mn[data-s="pomo"] .l-pomo,
+    .mn[data-s="water"] .l-water,
+    .mn[data-s="shelf"] .l-shelf,
+    .mn[data-s="todo"] .l-todo,
+    .mn[data-s="prayer"] .l-prayer,
+    .mn[data-s="clip"] .l-clip,
+    .mn[data-s="charge"] .l-charge,
+    .mn[data-s="notif"] .l-notif,
+    .mn[data-s="remind"] .l-remind,
+    .mn:is([data-s="music"], [data-s="pomo"], [data-s="water"], [data-s="shelf"], [data-s="todo"], [data-s="prayer"], [data-s="clip"]) :is(.l-hdr, .l-dots) {
+      opacity: 1;
+      transform: none;
+      transition: opacity 0.42s ease 0.06s, transform 0.42s cubic-bezier(0.2, 0.85, 0.25, 1) 0.04s;
+      pointer-events: auto;
+    }
+
+    .a { position: absolute; }
+    .vc { transform: translateY(-50%); }
+    .hc { transform: translateX(-50%); }
+    .c { transform: translate(-50%, -50%); }
+    .dim { color: rgba(255,255,255,0.5); }
+    .sb { font-weight: 600; }
+    .b { font-weight: 700; }
+
+    /* ── Header: battery ring, time, audio wave ── */
+    .ring {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: conic-gradient(#33e07a 0 var(--p, 75%), rgba(51,224,122,0.25) 0);
+      -webkit-mask: radial-gradient(circle, transparent 4.2px, #000 4.6px);
+      mask: radial-gradient(circle, transparent 4.2px, #000 4.6px);
+    }
+    .bars {
+      display: flex;
+      gap: 2px;
+      align-items: center;
+      height: 13px;
+    }
+    .bars i {
+      width: 2.2px;
+      border-radius: 2px;
+      background: #fff;
+      height: 35%;
+      animation: eq 0.85s ease-in-out infinite alternate;
+    }
+    .bars.paused i {
+      animation-play-state: paused;
+      height: 25%;
+    }
+    .bars i:nth-child(2) { animation-delay: -0.28s; }
+    .bars i:nth-child(3) { animation-delay: -0.56s; }
+    .bars i:nth-child(4) { animation-delay: -0.14s; }
+    .bars i:nth-child(5) { animation-delay: -0.42s; }
+    @keyframes eq {
+      to { height: 100%; }
+    }
+    .ttl {
+      left: 18px;
+      top: 18px;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    /* ── Navigation Chevrons & Pagination Dots ── */
+    .arw {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.16);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      z-index: 10;
+      transition: background 0.2s ease, transform 0.2s var(--spring);
+    }
+    .arw:hover {
+      background: rgba(255, 255, 255, 0.32);
+      transform: translate(-50%, -50%) scale(1.12);
+    }
+    .arw:active {
+      transform: translate(-50%, -50%) scale(0.92);
+    }
+    .arw svg {
+      width: 9px;
+      height: 9px;
+      stroke: #fff;
+      stroke-width: 2.4;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .dots {
+      left: 210px;
+      top: 132px;
+      transform: translate(-50%, -50%);
+      display: flex;
+      gap: 5px;
+      align-items: center;
+      cursor: pointer;
+      z-index: 10;
+    }
+    .mn[data-s="lyrics"] .dots {
+      left: 260px;
+    }
+    .dots i {
+      width: 4px;
+      height: 4px;
+      border-radius: 2px;
+      background: rgba(255, 255, 255, 0.35);
+      transition: width 0.35s var(--spring), background 0.25s ease;
+      cursor: pointer;
+    }
+    .dots i:hover {
+      background: rgba(255, 255, 255, 0.7);
+    }
+    .mn[data-s="music"] .dots i:nth-child(1),
+    .mn[data-s="pomo"] .dots i:nth-child(2),
+    .mn[data-s="water"] .dots i:nth-child(3),
+    .mn[data-s="shelf"] .dots i:nth-child(4),
+    .mn[data-s="clip"] .dots i:nth-child(5),
+    .mn[data-s="todo"] .dots i:nth-child(6),
+    .mn[data-s="prayer"] .dots i:nth-child(7) {
+      width: 16px;
+      background: #ffffff;
+    }
+
+    /* ── Mode 1: Pet (Kala mascot) ── */
+    .l-pet {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .ambient {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 50%, rgba(45, 91, 255, 0.35), transparent 70%);
+      opacity: 0.75;
+      pointer-events: none;
+    }
+    .kala-mascot-mount {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      z-index: 2;
+    }
+
+    /* ── Mode 2: Closed idle status ── */
+    .l-idle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+    }
+
+    /* ── Mode 3: Music player ── */
+    .art {
+      border-radius: 9px;
+      overflow: hidden;
+      background:
+        linear-gradient(115deg, transparent 0 46%, rgba(255,255,255,0.75) 46% 48%, transparent 48%),
+        radial-gradient(circle at 34% 58%, #2e7fe0 0 22%, transparent 23%),
+        radial-gradient(circle at 34% 58%, transparent 0 30%, #5aa6f2 31% 33%, transparent 34%),
+        repeating-linear-gradient(0deg, rgba(46,127,224,0.18) 0 2px, transparent 2px 7px),
+        linear-gradient(160deg, #eef5ff, #cfe2fb);
+      background-size: cover;
+      background-position: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.45);
+    }
+    .art.has-cover {
+      background-size: cover;
+      background-position: center center;
+      background-repeat: no-repeat;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+    }
+    .prog {
+      height: 4px;
+      border-radius: 2px;
+      background: rgba(255,255,255,0.22);
+      overflow: hidden;
+      cursor: pointer;
+    }
+    .prog i {
+      display: block;
+      height: 100%;
+      background: #fff;
+      border-radius: 2px;
+      width: 45%;
+      transition: width 0.25s linear;
+    }
+    .ctl {
+      width: 17px;
+      height: 17px;
+      fill: #fff;
+      cursor: pointer;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+    }
+    .ctl:hover {
+      transform: translate(-50%, -50%) scale(1.18);
+      opacity: 0.9;
+    }
+    .ctl:active {
+      transform: translate(-50%, -50%) scale(0.9);
+    }
+    .bub {
+      width: 17px;
+      height: 15px;
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+    .bub:hover {
+      transform: translate(-50%, -50%) scale(1.15);
+    }
+
+    /* ── Mode 4: Lyrics ── */
+    .l-lyrics {
+      background: #000000;
+    }
+    .l-lyrics .ambient {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 240px;
+      height: 100%;
+      background: radial-gradient(circle at 35% 45%, rgba(46, 127, 224, 0.28), transparent 75%);
+      pointer-events: none;
+    }
+    .lyr {
+      left: 254px;
+      width: 330px;
+      top: 14px;
+      height: 112px;
+      overflow: hidden;
+      mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
+    }
+    .lyr ol {
+      list-style: none;
+      margin: 0;
+      padding: 36px 0;
+      transition: transform 0.5s var(--spring);
+    }
+    .lyr li {
+      font-weight: 600;
+      font-size: 13.5px;
+      line-height: 1.35;
+      padding: 5px 0;
+      color: rgba(255, 255, 255, 0.35);
+      transform: scale(0.94);
+      transform-origin: left center;
+      transition: color 0.35s ease, transform 0.35s ease, text-shadow 0.35s ease;
+      cursor: pointer;
+    }
+    .lyr li:hover {
+      color: rgba(255, 255, 255, 0.7);
+    }
+    .lyr li.on {
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 15px;
+      transform: scale(1.02);
+      text-shadow: 0 0 14px rgba(255, 255, 255, 0.35);
+    }
+
+    /* ── Mode 5: Pomodoro ── */
+    .pring {
+      left: 78px;
+      top: 74px;
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      background: conic-gradient(from 200deg, #ff5a6e 0 var(--pm-pct, 75%), #ff3a3a var(--pm-pct, 75%), rgba(255,90,110,0.2) 0);
+      -webkit-mask: radial-gradient(circle, transparent 25.4px, #000 25.8px);
+      mask: radial-gradient(circle, transparent 25.4px, #000 25.8px);
+      box-shadow: 0 0 18px rgba(255,70,70,0.35);
+    }
+    .pglow {
+      left: 78px;
+      top: 74px;
+      width: 88px;
+      height: 88px;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      background: radial-gradient(circle, rgba(255,60,60,0.32), transparent 65%);
+    }
+    .pill {
+      height: 28px;
+      border-radius: 14px;
+      background: #1c202c;
+      border: 1px solid rgba(255,255,255,0.14);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 11.5px;
+      color: #ffffff;
+      cursor: pointer;
+      transition: background 0.18s ease, transform 0.18s var(--spring);
+    }
+    .pill:hover {
+      background: #2a3042;
+      transform: scale(1.04);
+    }
+    .pill:active {
+      transform: scale(0.96);
+    }
+    .pill svg {
+      width: 12px;
+      height: 12px;
+      stroke: #fff;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .fo-presets {
+      display: flex;
+      gap: 5px;
+    }
+    .fo-preset {
+      height: 22px;
+      padding: 0 8px;
+      border-radius: 11px;
+      background: #1b1e28;
+      border: none;
+      color: var(--mist);
+      font-size: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .fo-preset:hover, .fo-preset.active {
+      background: #32384a;
+      color: #ffffff;
+    }
+
+    /* ── Mode 6: Water Reminder ── */
+    .sw {
+      left: 162px;
+      top: 37px;
+      width: 34px;
+      height: 20px;
+      border-radius: 10px;
+      background: #2699ff;
+      cursor: pointer;
+      border: none;
+      position: absolute;
+    }
+    .sw i {
+      position: absolute;
+      right: 2px;
+      top: 2px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #fff;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.35);
+      transition: transform 0.2s ease;
+    }
+    .sw[aria-checked="false"] {
+      background: rgba(255,255,255,0.2);
+    }
+    .sw[aria-checked="false"] i {
+      transform: translateX(-14px);
+    }
+    .sw svg {
+      width: 9px;
+      height: 9px;
+      fill: #2699ff;
+    }
+    .wbar {
+      left: 44px;
+      top: 82.5px;
+      width: 152px;
+      height: 5px;
+      border-radius: 3px;
+      background: linear-gradient(90deg, #66dbff, #2d6bff);
+    }
+    .wbtn {
+      height: 26px;
+      border-radius: 13px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 11px 0 9px;
+      font-size: 11.5px;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.18s ease, transform 0.18s var(--spring);
+    }
+    .wbtn:hover {
+      transform: scale(1.04);
+    }
+    .wbtn:active {
+      transform: scale(0.96);
+    }
+    .wbtn svg {
+      width: 12px;
+      height: 12px;
+    }
+    .wchart {
+      left: 226px;
+      top: 50px;
+      width: 120px;
+      height: 54px;
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+    }
+    .wchart-col {
+      flex: 1;
+      border-radius: 3px;
+      background: linear-gradient(180deg, #56c8ff, #1d6ed8);
+      min-height: 4px;
+      transition: height 0.6s var(--spring);
+    }
+
+    /* ── Mode 7: File Shelf ── */
+    .zone {
+      left: 44px;
+      top: 33px;
+      width: 336px;
+      height: 90px;
+      border-radius: 16px;
+      border: 1.4px dashed rgba(255,255,255,0.3);
+      background: rgba(255,255,255,0.03);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      cursor: pointer;
+      transition: border-color 0.25s, background 0.25s, transform 0.35s var(--spring);
+    }
+    .zone.hover {
+      border-color: #19b8ff;
+      background: rgba(25, 184, 255, 0.08);
+      transform: scale(1.02);
+    }
+    .zone svg {
+      width: 22px;
+      height: 22px;
+      fill: none;
+      stroke: #fff;
+      stroke-width: 2;
+    }
+    .sh-file-card {
+      width: 76px;
+      height: 80px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.08);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      padding: 4px;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.15s;
+    }
+    .sh-file-card:hover {
+      background: rgba(255,255,255,0.16);
+      transform: scale(1.05);
+    }
+
+    /* ── Mode 8: Clipboard ── */
+    .cl-row {
+      left: 44px;
+      top: 36px;
+      width: 336px;
+      display: flex;
+      gap: 8px;
+    }
+    .cl-item {
+      flex: 1;
+      height: 82px;
+      padding: 10px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.1);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: background 0.18s, border-color 0.18s, transform 0.18s var(--spring);
+    }
+    .cl-item:hover {
+      background: rgba(255,255,255,0.15);
+      border-color: rgba(255,255,255,0.3);
+      transform: translateY(-2px);
+    }
+    .cl-item.copied {
+      border-color: #30c759;
+      background: rgba(48, 199, 89, 0.15);
+    }
+    .cl-item-txt {
+      font-size: 11.5px;
+      line-height: 1.35;
+      color: #fff;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      word-break: break-all;
+    }
+    .cl-item-when {
+      font-size: 9px;
+      color: var(--mist);
+    }
+
+    /* ── Mode 9: To-do ── */
+    .trow {
+      left: 202px;
+      width: 176px;
+      height: 28px;
+      border-radius: 9px;
+      background: #171b26;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding-left: 8px;
+      font-size: 11.5px;
+      color: #ffffff;
+      cursor: pointer;
+      transition: background 0.15s, opacity 0.2s;
+    }
+    .trow:hover {
+      background: #252b3d;
+    }
+    .trow.done {
+      background: rgba(40,120,60,0.38);
+      color: rgba(255,255,255,0.65);
+    }
+    .trow.done span.trow-text {
+      text-decoration: line-through;
+    }
+    .chk {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(255,255,255,0.4);
+      display: grid;
+      place-items: center;
+      flex: none;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .trow.done .chk {
+      background: #2fd06b;
+      border-color: #2fd06b;
+    }
+    .chk svg {
+      width: 9px;
+      height: 9px;
+      stroke: #fff;
+      stroke-width: 2.6;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      opacity: 0;
+    }
+    .trow.done .chk svg {
+      opacity: 1;
+    }
+
+    /* ── Mode 10: Prayer Times ── */
+    .pr-arc-wrap {
+      left: 200px;
+      top: 32px;
+      width: 180px;
+      height: 80px;
+    }
+
+    /* ── Collapse button ── */
+    .mn-collapse-btn {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: none;
+      background: #252834;
+      color: #ffffff;
+      font-size: 10px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 20;
+      transition: background 180ms ease, color 180ms ease;
+    }
+    .mn-collapse-btn:hover {
+      background: #3e4456;
+      color: #ffffff;
+    }
+    .mn:is([data-s="music"], [data-s="lyrics"], [data-s="pomo"], [data-s="water"], [data-s="shelf"], [data-s="todo"], [data-s="prayer"], [data-s="clip"]) .mn-collapse-btn {
+      display: flex;
+    }
+
+    /* ── Context Menu ── */
+    #ctx-menu {
+      pointer-events: auto;
+      position: fixed;
+      display: none;
+      background: rgba(14, 18, 30, 0.94);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px;
+      padding: 5px;
+      min-width: 150px;
+      box-shadow: 0 10px 28px rgba(0,0,0,0.5);
+      z-index: 1000;
+    }
+    #ctx-menu.open {
+      display: block;
+    }
+    .ctx-item {
+      padding: 7px 12px;
+      font-size: 12px;
+      color: var(--ink);
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.12s;
+    }
+    .ctx-item:hover {
+      background: rgba(255,255,255,0.12);
+    }
+    .ctx-item.danger {
+      color: #ff5a6e;
+    }
+    .ctx-sep {
+      height: 1px;
+      background: rgba(255,255,255,0.1);
+      margin: 4px 0;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms;
+        animation-iteration-count: 1;
+        transition-duration: 0.01ms;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="root">
+    <!-- Main Notch Pill -->
+    <section class="mn" id="mn" data-s="pet" aria-label="Kala Notch">
+
+      <!-- Natural Vector Squircle Corner Ears -->
+      <svg class="mn-ear mn-ear-l" viewBox="0 0 32 26" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M0,0 L32,0 L32,26 C32,10 19,0 0,0 Z" fill="#000000" />
+      </svg>
+      <svg class="mn-ear mn-ear-r" viewBox="0 0 32 26" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M32,0 L0,0 L0,26 C0,10 13,0 32,0 Z" fill="#000000" />
+      </svg>
+
+      <!-- 1. Resting: Living Pet Mascot -->
+      <div class="ly l-pet" id="l-pet" aria-label="Kala pendamping setiap kala">
+        <div class="ambient"></div>
+        <div id="kala-mascot-mount" class="kala-mascot-mount" title="Kala: Klik untuk membuka"></div>
+      </div>
+
+      <!-- 2. Closed idle status -->
+      <div class="ly l-idle" id="l-idle" aria-label="Status bar">
+        <span class="a ring c" style="left:20px;top:16px;"></span>
+        <span class="a b c js-time" style="left:75px;top:16px;font-size:15px;letter-spacing:-0.02em;">18:55</span>
+        <span class="a bars c" id="idle-wave" style="left:131px;top:16px;"><i></i><i></i><i></i><i></i><i></i></span>
+      </div>
+
+      <!-- Header row inside cards -->
+      <div class="ly l-hdr">
+        <span class="a ring c" id="hdr-ring" style="left:146px;top:18px;"></span>
+        <span class="a vc" style="left:163px;top:18px;font-size:11.5px;color:rgba(255,255,255,0.85);"><span class="js-date">Hari ini</span>&nbsp; <b class="js-time">18:55</b></span>
+        <span class="a bars c" id="hdr-wave" style="left:396px;top:18px;"><i></i><i></i><i></i><i></i><i></i></span>
+      </div>
+
+      <!-- Bottom navigation dots -->
+      <div class="ly l-dots">
+        <span class="a dots" id="notch-dots">
+          <i data-p="music" title="Musik"></i>
+          <i data-p="pomo" title="Fokus"></i>
+          <i data-p="water" title="Water"></i>
+          <i data-p="shelf" title="Shelf"></i>
+          <i data-p="clip" title="Clipboard"></i>
+          <i data-p="todo" title="To-do"></i>
+          <i data-p="prayer" title="Sholat"></i>
+        </span>
+      </div>
+
+      <!-- 3. Music Player -->
+      <div class="ly l-music" id="l-music">
+        <span class="a art" id="mu-art" style="left:22px;top:12px;width:62px;height:62px;"></span>
+        <span class="a vc sb" id="mu-title" style="left:100px;top:47px;font-size:15px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Paper Sky</span>
+        <span class="a vc dim" id="mu-artist" style="left:100px;top:63px;font-size:11.5px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Lumen Coast - Summer Flows</span>
+        <span class="a arw c btn-prev-page" style="left:365px;top:70px;" title="Sebelumnya"><svg viewBox="0 0 10 10"><path d="M6.5 1.5 3 5l3.5 3.5"/></svg></span>
+        <span class="a arw c btn-next-page" style="left:395px;top:70px;" title="Berikutnya"><svg viewBox="0 0 10 10"><path d="M3.5 1.5 7 5l-3.5 3.5"/></svg></span>
+        <span class="a vc dim" id="mu-elapsed" style="left:25px;top:91px;font-size:11px;">03:13</span>
+        <span class="a prog vc" id="mu-prog" style="left:77px;top:91px;width:260px;" title="Geser posisi"><i id="mu-bar"></i></span>
+        <span class="a vc dim" id="mu-remain" style="right:25px;top:91px;font-size:11px;">-01:03</span>
+        <svg class="a bub c" id="btn-mu-lyric" style="left:53px;top:118px;" viewBox="0 0 18 16" title="Lirik"><path d="M4 .8h10a3.2 3.2 0 0 1 3.2 3.2v4.6a3.2 3.2 0 0 1-3.2 3.2H8.4L4.6 15l.5-3.2H4A3.2 3.2 0 0 1 .8 8.6V4A3.2 3.2 0 0 1 4 .8z" fill="none" stroke="rgba(255,255,255,.75)" stroke-width="1.3"/><circle cx="6.3" cy="5.4" r="1.3" fill="rgba(255,255,255,.75)"/><circle cx="11.3" cy="5.4" r="1.3" fill="rgba(255,255,255,.75)"/></svg>
+        <svg class="a ctl c" id="btn-mu-prev" style="left:162.5px;top:118px;" viewBox="0 0 24 24" title="Sebelumnya"><path d="M11 6 3 12l8 6zM21 6l-8 6 8 6z"/></svg>
+        <svg class="a ctl c" id="btn-mu-play" style="left:210px;top:118px;" viewBox="0 0 24 24" title="Putar / Jeda"><path id="btn-mu-play-icon" d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>
+        <svg class="a ctl c" id="btn-mu-next" style="left:257.5px;top:118px;" viewBox="0 0 24 24" title="Berikutnya"><path d="m13 6 8 6-8 6zM3 6l8 6-8 6z"/></svg>
+      </div>
+
+      <!-- 4. Synced Lyrics -->
+      <div class="ly l-lyrics" id="l-lyrics">
+        <div class="ambient"></div>
+        <span class="a art" id="lyr-art" style="left:20px;top:16px;width:56px;height:56px;"></span>
+        <span class="a vc sb" id="lyr-title" style="left:88px;top:34px;font-size:14.5px;max-width:134px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Paper Sky</span>
+        <span class="a vc dim" id="lyr-artist" style="left:88px;top:52px;font-size:11px;max-width:134px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Lumen Coast</span>
+        <span class="a vc dim" id="lyr-elapsed" style="left:20px;top:84px;font-size:10.5px;">02:59</span>
+        <span class="a prog vc" id="lyr-prog" style="left:58px;top:84px;width:120px;"><i id="lyr-bar"></i></span>
+        <span class="a vc dim" id="lyr-remain" style="left:188px;top:84px;font-size:10.5px;">-01:17</span>
+        <svg class="a bub c" id="btn-lyr-back" style="left:38px;top:112px;" viewBox="0 0 18 16" title="Kembali ke musik"><path d="M4 .8h10a3.2 3.2 0 0 1 3.2 3.2v4.6a3.2 3.2 0 0 1-3.2 3.2H8.4L4.6 15l.5-3.2H4A3.2 3.2 0 0 1 .8 8.6V4A3.2 3.2 0 0 1 4 .8z" fill="#fff"/><circle cx="6.3" cy="5.4" r="1.3" fill="#000"/><circle cx="11.3" cy="5.4" r="1.3" fill="#000"/></svg>
+        <svg class="a ctl c" id="btn-lyr-prev" style="left:88px;top:112px;" viewBox="0 0 24 24"><path d="M11 6 3 12l8 6zM21 6l-8 6 8 6z"/></svg>
+        <svg class="a ctl c" id="btn-lyr-play" style="left:128px;top:112px;" viewBox="0 0 24 24"><path id="btn-lyr-play-icon" d="M7 5h4v14H7zM13 5h4v14h-4z"/></svg>
+        <svg class="a ctl c" id="btn-lyr-next" style="left:168px;top:112px;" viewBox="0 0 24 24"><path d="m13 6 8 6-8 6zM3 6l8 6-8 6z"/></svg>
+        <span class="a" style="left:236px;top:18px;width:1px;height:104px;background:rgba(255,255,255,0.12);"></span>
+        <div class="a lyr"><ol id="lyr">
+          <li>we fold the summer light</li>
+          <li>into paper birds tonight</li>
+          <li>and send them through the sky</li>
+          <li>to find you by the sea</li>
+          <li class="on">every wing a little song</li>
+          <li>that carries us along</li>
+        </ol></div>
+      </div>
+
+      <!-- 5. Focus / Pomodoro -->
+      <div class="ly l-pomo" id="l-pomo">
+        <span class="a ttl vc">Pomodoro</span>
+        <span class="a arw c btn-prev-page" style="left:22px;top:70px;"><svg viewBox="0 0 10 10"><path d="M6.5 1.5 3 5l3.5 3.5"/></svg></span>
+        <span class="a arw c btn-next-page" style="left:395px;top:70px;"><svg viewBox="0 0 10 10"><path d="M3.5 1.5 7 5l-3.5 3.5"/></svg></span>
+        <span class="a dim" id="fo-session" style="left:46px;top:30px;font-size:10.5px;">Fokus · 1 dari 4</span>
+        <span class="a b" id="fo-time" style="left:45px;top:41px;font-size:28px;line-height:34px;font-variant-numeric:tabular-nums;">25:00</span>
+        <span class="a sb" id="fo-until" style="left:46px;top:79px;font-size:14px;">25:00</span>
+        <span class="a sb" id="fo-until-sub" style="left:92px;top:80.5px;font-size:12px;color:#a855f7;">sampai selesai</span>
+        <i class="a" style="left:46px;top:106px;width:128px;height:4px;border-radius:2px;background:rgba(255,255,255,0.14);"></i>
+        <i class="a" id="fo-bar" style="left:46px;top:106px;width:96px;height:4px;border-radius:2px;background:linear-gradient(90deg,#ff5a6e,#ff3a3a);transition:width 0.4s ease;"></i>
+
+        <div class="a pglow"></div>
+        <div class="a pring" id="fo-ring" style="--pm-pct:75%;"></div>
+
+        <button type="button" class="a pill" id="btn-fo-toggle" style="left:246px;top:85px;width:78px;border:none;">Mulai</button>
+        <button type="button" class="a pill" id="btn-fo-reset" style="left:332px;top:85px;width:38px;border:none;" title="Reset">&#8635;</button>
+        <span class="a fo-presets" style="left:236px;top:44px;">
+          <button type="button" class="fo-preset active" data-pomo="focus">25m</button>
+          <button type="button" class="fo-preset" data-pomo="short">5m</button>
+          <button type="button" class="fo-preset" data-pomo="long">15m</button>
+        </span>
+      </div>
+
+      <!-- 6. Water Reminder -->
+      <div class="ly l-water" id="l-water">
+        <span class="a ttl vc">Water <span style="color:#56c8ff">Reminder</span></span>
+        <span class="a arw c btn-prev-page" style="left:22px;top:70px;"><svg viewBox="0 0 10 10"><path d="M6.5 1.5 3 5l3.5 3.5"/></svg></span>
+        <span class="a arw c btn-next-page" style="left:395px;top:70px;"><svg viewBox="0 0 10 10"><path d="M3.5 1.5 7 5l-3.5 3.5"/></svg></span>
+        <span class="a vc" style="left:44px;top:47px;"><b id="wa-amount" style="font-size:30px;">1.5</b> <span class="dim sb" id="wa-goal" style="font-size:13px;">/ 2.0 L</span></span>
+        <button type="button" class="a sw" id="wa-sw" role="switch" aria-checked="true" aria-label="Aktifkan pengingat"><i><svg viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0-6 6v4l-2 3h16l-2-3V9a6 6 0 0 0-6-6zM10 19a2 2 0 0 0 4 0z"/></svg></i></button>
+        <span class="a vc dim" id="wa-pct-sub" style="left:44px;top:71px;font-size:11.5px;">Hari ini · <b id="wa-pct" style="color:#4fc0ff;">75%</b> · Berjalan</span>
+        <span class="a wbar" id="wa-bar" style="width:114px;"></span>
+        <button type="button" class="a wbtn" id="btn-wa-drink" style="left:44px;top:98px;background:#0e4a86;"><svg viewBox="0 0 24 24" fill="#7fd0ff"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/></svg>+250 ml Minum</button>
+        <span class="a" style="left:208px;top:22px;width:1px;height:102px;background:rgba(255,255,255,0.12);"></span>
+        <div class="a wchart" id="wa-chart">
+          <div class="wchart-col" style="height:28px;" title="09:00"></div>
+          <div class="wchart-col" style="height:36px;" title="11:00"></div>
+          <div class="wchart-col" style="height:44px;" title="13:00"></div>
+          <div class="wchart-col" style="height:20px;" title="15:00"></div>
+          <div class="wchart-col" style="height:12px;" title="17:00"></div>
+        </div>
+      </div>
+
+      <!-- 7. File Shelf -->
+      <div class="ly l-shelf" id="l-shelf">
+        <span class="a ttl vc">Shelf</span>
+        <span class="a arw c btn-prev-page" style="left:22px;top:70px;"><svg viewBox="0 0 10 10"><path d="M6.5 1.5 3 5l3.5 3.5"/></svg></span>
+        <span class="a arw c btn-next-page" style="left:395px;top:70px;"><svg viewBox="0 0 10 10"><path d="M3.5 1.5 7 5l-3.5 3.5"/></svg></span>
+        <button type="button" class="a" id="btn-sh-clear" style="right:52px;top:15px;background:none;border:none;color:var(--mist);font-size:10px;cursor:pointer;">Hapus</button>
+        <input type="file" id="sh-file-input" multiple style="display:none;" aria-label="Pilih berkas untuk disimpan ke shelf" />
+        <div class="a zone" id="sh-zone" style="cursor:pointer;" title="Klik untuk memilih berkas atau seret ke sini">
+          <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+          <span style="font-size:12px;font-weight:600;">Tarik & letakkan file di sini</span>
+          <span style="font-size:10px;color:var(--mist);">Klik untuk memilih atau seret berkas</span>
+        </div>
+        <div class="a" id="sh-file-list" style="left:44px;top:33px;width:336px;height:90px;display:none;gap:10px;align-items:center;"></div>
+      </div>
+
+      <!-- 8. Clipboard History -->
+      <div class="ly l-clip" id="l-clip">
+        <span class="a ttl vc">Clipboard History</span>
+        <span class="a arw c btn-prev-page" style="left:22px;top:70px;"><svg viewBox="0 0 10 10"><path d="M6.5 1.5 3 5l3.5 3.5"/></svg></span>
+        <span class="a arw c btn-next-page" style="left:395px;top:70px;"><svg viewBox="0 0 10 10"><path d="M3.5 1.5 7 5l-3.5 3.5"/></svg></span>
+        <div class="a cl-row" id="cl-card-list">
+          <div class="cl-item">
+            <span class="cl-item-txt">Meeting moved to 3 PM</span>
+            <span class="cl-item-when">Baru saja</span>
+          </div>
+          <div class="cl-item">
+            <span class="cl-item-txt">git commit -m "fix notch layout"</span>
+            <span class="cl-item-when">5 mnt lalu</span>
+          </div>
+          <div class="cl-item">
+            <span class="cl-item-txt">https://kala.app/desktop</span>
+            <span class="cl-item-when">15 mnt lalu</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 9. To-do List -->
+      <div class="ly l-todo" id="l-todo">
+        <span class="a ttl vc">Todo<span style="color:#38d36f">List</span></span>
+        <span class="a arw c btn-prev-page" style="left:22px;top:70px;"><svg viewBox="0 0 10 10"><path d="M6.5 1.5 3 5l3.5 3.5"/></svg></span>
+        <span class="a arw c btn-next-page" style="left:395px;top:70px;"><svg viewBox="0 0 10 10"><path d="M3.5 1.5 7 5l-3.5 3.5"/></svg></span>
+        <span class="a b vc" id="todo-count" style="left:44px;top:48px;font-size:30px;">2/3</span>
+        <span class="a vc dim" style="left:44px;top:74px;font-size:11px;">Tugas Selesai</span>
+        <span class="a pill" id="btn-add-todo" style="left:44px;top:98px;height:24px;padding:0 10px;font-size:11px;gap:5px;cursor:pointer;"><svg viewBox="0 0 24 24" style="fill:#fff;stroke:none;width:11px;height:11px;"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 5v4h4v2h-4v4h-2v-4H7v-2h4V7z"/></svg>Tambah</span>
+        <div id="todo-items-container">
+          <div class="a trow" style="top:34px;" data-id="td-1">
+            <span class="chk"><svg viewBox="0 0 10 10"><path d="m2 5.2 2 2 4-4.4"/></svg></span>
+            <span class="trow-text">Review pull request arsitektur Tauri v2</span>
+          </div>
+          <div class="a trow" style="top:65px;" data-id="td-2">
+            <span class="chk"><svg viewBox="0 0 10 10"><path d="m2 5.2 2 2 4-4.4"/></svg></span>
+            <span class="trow-text">Validasi kalkulasi jadwal sholat Kemenag RI</span>
+          </div>
+          <div class="a trow done" style="top:96px;" data-id="td-3">
+            <span class="chk"><svg viewBox="0 0 10 10"><path d="m2 5.2 2 2 4-4.4"/></svg></span>
+            <span class="trow-text">Sinkronisasi lirik LRCLIB pada visual notch</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 10. Prayer Times -->
+      <div class="ly l-prayer" id="l-prayer">
+        <span class="a ttl vc">Jadwal Sholat</span>
+        <span class="a arw c btn-prev-page" style="left:22px;top:70px;"><svg viewBox="0 0 10 10"><path d="M6.5 1.5 3 5l3.5 3.5"/></svg></span>
+        <span class="a arw c btn-next-page" style="left:395px;top:70px;"><svg viewBox="0 0 10 10"><path d="M3.5 1.5 7 5l-3.5 3.5"/></svg></span>
+        <div class="a" style="left:44px;top:38px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span id="pr-icon" style="font-size:20px;color:#ffa133;">🌙</span>
+            <div>
+              <div id="pr-name" style="font-size:18px;font-weight:700;">Maghrib</div>
+              <div id="pr-sub" style="font-size:11px;color:var(--mist);">Waktunya sholat</div>
+            </div>
+          </div>
+          <div id="pr-time" style="font-size:26px;font-weight:700;margin-top:4px;">17:48</div>
+        </div>
+        <svg class="a pr-arc-wrap" viewBox="0 0 180 80">
+          <path d="M 10 65 Q 90 10 170 65" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2" stroke-linecap="round"/>
+          <path d="M 10 65 Q 90 10 170 65" fill="none" stroke="#ffa133" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="160" stroke-dashoffset="40"/>
+          <circle cx="20" cy="58" r="3" fill="#fff" title="Subuh"/>
+          <circle cx="55" cy="35" r="3" fill="#fff" title="Dzuhur"/>
+          <circle cx="90" cy="24" r="3" fill="#fff" title="Ashar"/>
+          <circle cx="130" cy="38" r="5" fill="#ffa133" title="Maghrib"/>
+          <circle cx="160" cy="58" r="3" fill="#fff" title="Isya"/>
+        </svg>
+      </div>
+
+      <!-- 11. Battery Charging notification -->
+      <div class="ly l-charge" id="l-charge">
+        <span class="a ring c" style="left:35px;top:28px;"></span>
+        <span class="a vc sb" style="left:64px;top:20px;font-size:14px;">Mengisi Daya</span>
+        <span class="a vc dim" style="left:64px;top:36px;font-size:11px;">Pengisi daya terhubung</span>
+        <span class="a vc b" id="ch-pct" style="right:22px;top:28px;font-size:22px;">85%</span>
+      </div>
+
+      <!-- 12. Notification banner -->
+      <div class="ly l-notif" id="l-notif">
+        <span class="a vc sb" id="notif-title" style="left:24px;top:20px;font-size:13.5px;">Notifikasi</span>
+        <span class="a vc dim" id="notif-body" style="left:24px;top:36px;font-size:11px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Pesan baru diterima</span>
+      </div>
+
+      <!-- Subtle collapse button -->
+      <button type="button" class="mn-collapse-btn" id="btn-collapse-notch" title="Tutup ke mode istirahat">✕</button>
+
+    </section><!-- /.mn -->
+  </div><!-- /#root -->
+
+  <!-- Context Menu -->
+  <div id="ctx-menu" role="menu" aria-label="Menu Kala">
+    <div class="ctx-item" id="ctx-idle">🐾 Mode Maskot</div>
+    <div class="ctx-item" id="ctx-settings">⚙ Pengaturan</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item danger" id="ctx-quit">✕ Keluar dari Kala</div>
+  </div>
+
+  <script type="module" src="src/notch.js"></script>
+</body>
+</html>

@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kala: Pengaturan &amp; Dasbor</title>
+  <link rel="icon" type="image/png" href="src/assets/icon.png" />
+  <link rel="stylesheet" href="src/styles.css" />
+  <style>
+    /* Styling khusus jendela Pengaturan */
+    .workspace-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px 20px 48px;
+    }
+    .settings-subcard {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 18px 20px;
+      margin-bottom: 20px;
+    }
+    .settings-subcard-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+    .settings-subcard-desc {
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      margin-bottom: 14px;
+    }
+    .todo-grid-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 820px) {
+      .todo-grid-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main-workspace">Lewati ke ruang kerja pengaturan</a>
+
+  <div class="workspace-container">
+    <header class="app-header">
+      <div class="brand-cluster">
+        <img src="src/assets/icon.png" alt="Ikon Kala" class="brand-logo" width="48" height="48" />
+        <div>
+          <h1 class="brand-title">kala</h1>
+          <p class="brand-subtitle" style="color: #F4CAA8; font-weight: 600; font-size: 14px; margin-top: 2px; letter-spacing: 0.02em;">
+            pendamping setiap kala
+          </p>
+          <p class="brand-subtitle" style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">
+            Living desktop notch lintas platform dengan 50 kunci konfigurasi asli, manajemen tugas to-do, kalkulator sholat Kemenag RI 84 kota, Pomodoro, dan lirik LRCLIB.
+          </p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button type="button" class="btn" id="btn-theme-toggle" aria-pressed="false">Tema: Gelap</button>
+        <button type="button" class="btn" id="btn-test-hud">Uji HUD Overlay</button>
+        <button type="button" class="btn btn-danger" id="btn-reset-all">Reset ke Default Pabrik</button>
+      </div>
+    </header>
+
+    <div class="hud-toast" id="hud-toast" role="status" aria-live="polite" hidden>
+      <span id="hud-toast-text">Volume: 78%</span>
+      <button type="button" class="btn" id="btn-dismiss-hud">Tutup</button>
+    </div>
+
+    <main id="main-workspace" class="workspace-grid">
+      <nav class="settings-nav" role="tablist" aria-label="Kategori Pengaturan Kala">
+        <button type="button" role="tab" class="settings-nav-btn" id="stab-general" aria-selected="true" aria-controls="spanel-general" data-settings-tab="general">
+          <span>1. Umum &amp; Perilaku</span>
+        </button>
+        <button type="button" role="tab" class="settings-nav-btn" id="stab-appearance" aria-selected="false" aria-controls="spanel-appearance" data-settings-tab="appearance">
+          <span>2. Gaya Notch &amp; Glass</span>
+        </button>
+        <button type="button" role="tab" class="settings-nav-btn" id="stab-music" aria-selected="false" aria-controls="spanel-music" data-settings-tab="music">
+          <span>3. Musik, Lirik &amp; HUD</span>
+        </button>
+        <button type="button" role="tab" class="settings-nav-btn" id="stab-productivity" aria-selected="false" aria-controls="spanel-productivity" data-settings-tab="productivity">
+          <span>4. To-Do, Fokus &amp; Air</span>
+        </button>
+        <button type="button" role="tab" class="settings-nav-btn" id="stab-prayer" aria-selected="false" aria-controls="spanel-prayer" data-settings-tab="prayer">
+          <span>5. Sholat Kemenag RI</span>
+        </button>
+        <button type="button" role="tab" class="settings-nav-btn" id="stab-widgets" aria-selected="false" aria-controls="spanel-widgets" data-settings-tab="widgets">
+          <span>6. Widgets, Shelf &amp; Klip</span>
+        </button>
+        <button type="button" role="tab" class="settings-nav-btn" id="stab-inspector" aria-selected="false" aria-controls="spanel-inspector" data-settings-tab="inspector">
+          <span>7. Berkas `settings.txt`</span>
+        </button>
+      </nav>
+
+      <div id="settings-panels-host">
+        <!-- 1. UMUM & PERILAKU -->
+        <section id="spanel-general" class="settings-panel" role="tabpanel" aria-labelledby="stab-general">
+          <div class="panel-header">
+            <h2 class="panel-title">Pengaturan Umum &amp; Perilaku Notch</h2>
+            <p class="panel-desc">Atur cara Living Notch merespons klik, layar penuh, suara antarmuka, dan indikator Status Ring.</p>
+          </div>
+          <div class="setting-list" id="settings-list-general"></div>
+        </section>
+
+        <!-- 2. GAYA NOTCH & GLASS -->
+        <section id="spanel-appearance" class="settings-panel" role="tabpanel" aria-labelledby="stab-appearance" hidden>
+          <div class="panel-header">
+            <h2 class="panel-title">Gaya Notch, Ukuran &amp; Efek Glass</h2>
+            <p class="panel-desc">Pilih antara gaya Classic (menyatu di tepi atas layar) atau Floating, serta intensitas transparansi kaca.</p>
+          </div>
+          <div class="setting-list" id="settings-list-appearance"></div>
+        </section>
+
+        <!-- 3. MUSIK, LIRIK & HUD -->
+        <section id="spanel-music" class="settings-panel" role="tabpanel" aria-labelledby="stab-music" hidden>
+          <div class="panel-header">
+            <h2 class="panel-title">Musik, Lirik LRCLIB &amp; System HUD Popups</h2>
+            <p class="panel-desc">Kelola tampilan lirik otomatis serta popup sistem untuk Volume, Kecerahan, Caps Lock, Bahasa Input, Baterai, Wi-Fi, dan Bluetooth.</p>
+          </div>
+
+          <div class="settings-subcard">
+            <h3 class="settings-subcard-title">Pengujian Lirik Sinkron (LRCLIB API)</h3>
+            <p class="settings-subcard-desc">Cari lirik lagu bersinkronisasi waktu nyata menggunakan layanan gratis LRCLIB.</p>
+            <form id="form-lrclib-search" class="btn-row" style="margin-bottom: 12px; display: flex; gap: 8px;">
+              <label for="input-lrclib-query" class="visually-hidden" style="display:none;">Judul lagu</label>
+              <input id="input-lrclib-query" type="text" class="input-field" style="flex: 1;" value="Hindia Evaluasi" placeholder="Contoh: Tulus Monokrom atau Hindia Evaluasi" />
+              <button type="submit" class="btn btn-primary" id="btn-lrclib-fetch">Ambil Lirik</button>
+              <button type="button" class="btn" id="btn-lrclib-sim-error">Uji Gangguan</button>
+            </form>
+            <div id="lyrics-status-banner" class="state-banner" hidden></div>
+            <div id="lyrics-container" class="lyrics-box" tabindex="0" aria-label="Teks lirik lagu" style="max-height: 200px; overflow-y: auto;"></div>
+          </div>
+
+          <h3 style="font-size: 15px; font-weight: 600; margin: 20px 0 10px; color: var(--text-primary);">Preferensi Musik &amp; Notifikasi HUD</h3>
+          <div class="setting-list" id="settings-list-music"></div>
+        </section>
+
+        <!-- 4. TO-DO, FOKUS & AIR -->
+        <section id="spanel-productivity" class="settings-panel" role="tabpanel" aria-labelledby="stab-productivity" hidden>
+          <div class="panel-header">
+            <h2 class="panel-title">Manajemen To-Do, Fokus Pomodoro &amp; Air Minum</h2>
+            <p class="panel-desc">Tambah dan kelola tugas harian yang tersinkronisasi langsung dengan desktop notch, pelacak hidrasi air, dan durasi Pomodoro.</p>
+          </div>
+
+          <!-- Interactive To-Do Management -->
+          <div class="settings-subcard">
+            <h3 class="settings-subcard-title">Manajemen Tugas Harian (`tasks.txt`)</h3>
+            <p class="settings-subcard-desc">Tugas yang ditambahkan atau ditandai selesai di sini otomatis tersinkronkan ke kartu To-Do desktop notch.</p>
+
+            <div class="todo-grid-layout">
+              <div>
+                <form id="form-add-todo">
+                  <div style="margin-bottom: 10px;">
+                    <label for="input-todo-title" style="display: block; font-size: 12px; color: #B6C0D4; margin-bottom: 4px;">Nama tugas</label>
+                    <input id="input-todo-title" type="text" class="input-field" placeholder="Contoh: Tinjau rancangan arsitektur Kala" required />
+                  </div>
+                  <div class="btn-row" style="margin-bottom: 12px; display: flex; gap: 8px;">
+                    <div style="flex: 1;">
+                      <label for="input-todo-time" style="display: block; font-size: 12px; color: #B6C0D4; margin-bottom: 4px;">Jam mulai</label>
+                      <input id="input-todo-time" type="time" class="input-field" value="14:00" />
+                    </div>
+                    <div style="flex: 1;">
+                      <label for="input-todo-duration" style="display: block; font-size: 12px; color: #B6C0D4; margin-bottom: 4px;">Durasi (menit)</label>
+                      <input id="input-todo-duration" type="number" class="input-field" min="5" max="240" value="30" />
+                    </div>
+                  </div>
+                  <button type="submit" class="btn btn-primary" id="btn-save-todo" style="width: 100%;">+ Simpan Tugas</button>
+                </form>
+              </div>
+
+              <div>
+                <div id="todo-empty-banner" class="state-banner" hidden>
+                  Belum ada tugas terjadwal hari ini. Gunakan formulir di sebelah kiri untuk menambahkan tugas pertama Anda.
+                </div>
+                <ul class="item-list" id="todo-list" style="max-height: 250px; overflow-y: auto;"></ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Interactive Water Tracker -->
+          <div class="settings-subcard">
+            <h3 class="settings-subcard-title">Pelacak Hidrasi Air Minum</h3>
+            <p class="settings-subcard-desc" id="water-bottle-status">Pantau konsumsi cairan harian Anda.</p>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+              <span id="water-progress-label" style="font-size: 13px; font-weight: 600;">1200 ml dari 2000 ml (60%)</span>
+            </div>
+            <div class="progress-track" aria-hidden="true" style="margin-bottom: 14px;">
+              <div class="progress-fill" id="water-progress-fill" style="width: 60%; background: #38BDF8;"></div>
+            </div>
+            <div class="btn-row" style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button type="button" class="btn btn-primary" id="btn-water-drink">+ Minum 1 Gelas (200ml)</button>
+              <button type="button" class="btn" id="btn-water-refill">Isi Ulang Botol</button>
+              <button type="button" class="btn" id="btn-water-reset">Reset Hari Ini</button>
+            </div>
+          </div>
+
+          <h3 style="font-size: 15px; font-weight: 600; margin: 20px 0 10px; color: var(--text-primary);">Preferensi Pomodoro &amp; Kalender</h3>
+          <div class="setting-list" id="settings-list-productivity"></div>
+        </section>
+
+        <!-- 5. SHOLAT KEMENAG RI -->
+        <section id="spanel-prayer" class="settings-panel" role="tabpanel" aria-labelledby="stab-prayer" hidden>
+          <div class="panel-header">
+            <h2 class="panel-title">Jadwal Sholat Metode Kemenag RI (84 Kota)</h2>
+            <p class="panel-desc">Pilih kota dari 38 provinsi Indonesia dan atur koreksi menit (`prayer_adj_*`) untuk Subuh, Dzuhur, Ashar, Maghrib, dan Isya.</p>
+          </div>
+
+          <div class="settings-subcard">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 12px; flex-wrap: wrap;">
+              <div>
+                <h3 class="settings-subcard-title" id="prayer-city-heading">Jadwal Sholat Kemenag RI</h3>
+                <p class="settings-subcard-desc" id="prayer-next-summary" style="margin-bottom: 0;">Memuat jadwal waktu sholat...</p>
+              </div>
+              <div style="min-width: 260px;">
+                <label for="notch-select-prayer-city" style="display: block; font-size: 12px; color: #B6C0D4; margin-bottom: 4px;">Pilih Kota Acuan</label>
+                <select id="notch-select-prayer-city" class="select-field" style="width: 100%;"></select>
+              </div>
+            </div>
+            <div class="prayer-list tabular-nums" id="prayer-slots-grid"></div>
+          </div>
+
+          <h3 style="font-size: 15px; font-weight: 600; margin: 20px 0 10px; color: var(--text-primary);">Pengaturan Notifikasi &amp; Koreksi Menit</h3>
+          <div class="setting-list" id="settings-list-prayer"></div>
+        </section>
+
+        <!-- 6. WIDGETS, SHELF & KLIP -->
+        <section id="spanel-widgets" class="settings-panel" role="tabpanel" aria-labelledby="stab-widgets" hidden>
+          <div class="panel-header">
+            <h2 class="panel-title">Today Widgets, File Shelf &amp; Clipboard</h2>
+            <p class="panel-desc">Semua fitur riwayat clipboard (50 item dan penyimpanan permanen) serta file shelf terbuka penuh tanpa batasan.</p>
+          </div>
+
+          <div class="todo-grid-layout" style="margin-bottom: 20px;">
+            <div class="settings-subcard" style="margin-bottom: 0;">
+              <h3 class="settings-subcard-title">File Shelf (`shelf.txt`)</h3>
+              <p class="settings-subcard-desc">Simpan berkas cepat atau tautan kerja.</p>
+              <form id="form-add-shelf" class="btn-row" style="margin-bottom: 10px; display: flex; gap: 6px;">
+                <input id="input-shelf-item" type="text" class="input-field" style="flex: 1;" placeholder="~/Documents/laporan.pdf" required />
+                <button type="submit" class="btn btn-primary">Tambah</button>
+                <button type="button" class="btn" id="btn-clear-shelf">Bersihkan</button>
+              </form>
+              <div id="shelf-empty-banner" class="state-banner" hidden>
+                File Shelf kosong.
+              </div>
+              <ul class="item-list" id="shelf-list" style="max-height: 200px; overflow-y: auto;"></ul>
+            </div>
+
+            <div class="settings-subcard" style="margin-bottom: 0;">
+              <h3 class="settings-subcard-title">Riwayat Clipboard (50 Slot Terbuka)</h3>
+              <p class="settings-subcard-desc">Cuplikan teks dan perintah cepat.</p>
+              <form id="form-add-clip" class="btn-row" style="margin-bottom: 10px; display: flex; gap: 6px;">
+                <input id="input-clip-item" type="text" class="input-field" style="flex: 1;" placeholder="Cuplikan teks atau perintah..." required />
+                <button type="submit" class="btn btn-primary">Simpan</button>
+                <button type="button" class="btn" id="btn-clear-clip">Hapus</button>
+              </form>
+              <div id="clip-empty-banner" class="state-banner" hidden>
+                Riwayat clipboard kosong.
+              </div>
+              <ul class="item-list" id="clip-list" style="max-height: 200px; overflow-y: auto;"></ul>
+            </div>
+          </div>
+
+          <h3 style="font-size: 15px; font-weight: 600; margin: 20px 0 10px; color: var(--text-primary);">Pengaturan Today Widgets</h3>
+          <div class="setting-list" id="settings-list-widgets"></div>
+        </section>
+
+        <!-- 7. INSPEKTOR SETTINGS.TXT -->
+        <section id="spanel-inspector" class="settings-panel" role="tabpanel" aria-labelledby="stab-inspector" hidden>
+          <div class="panel-header">
+            <h2 class="panel-title">Inspektur Berkas Status (`settings.txt`) &amp; Arsitektur</h2>
+            <p class="panel-desc">Representasi waktu nyata dari 50 kunci konfigurasi `settings.txt` yang tersinkronisasi langsung dengan backend Kala.</p>
+          </div>
+          <div class="btn-row" style="margin-bottom: 14px;">
+            <button type="button" class="btn btn-primary" id="btn-copy-settings-txt">Salin Isi `settings.txt`</button>
+            <button type="button" class="btn" id="btn-download-settings-txt">Unduh Berkas `settings.txt`</button>
+            <span id="copy-settings-feedback" style="font-size: 13px; color: var(--text-secondary);" aria-live="polite"></span>
+          </div>
+          <pre class="code-preview tabular-nums" id="raw-settings-preview" tabindex="0" aria-label="Isi berkas settings.txt"></pre>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script type="module" src="src/app.js"></script>
+</body>
+</html>
